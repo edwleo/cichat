@@ -13,7 +13,7 @@ class Chat implements MessageComponentInterface
   public function __construct()
   {
     $this->clients = new \SplObjectStorage;
-    $this->users = [];
+    $this->users = []; //Cada equipo conectado a esta transmisión
   }
 
   public function onOpen(ConnectionInterface $conn)
