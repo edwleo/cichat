@@ -8,12 +8,13 @@ use Ratchet\Http\HttpServer;      //Protocolo de comunicación
 use Ratchet\WebSocket\WsServer;   //Socket
 
 use App\Libraries\Chat;           //Implementación socket = CHAT
+use App\Libraries\Notify;         //Implementación socket = CHAT
 
 //Chat > Socket > Protocolo > Server(I/O)
 $server = IoServer::factory(
   new HttpServer(
     new WsServer(
-      new Chat()
+      new Notify()
     )
   ), 8080
 );

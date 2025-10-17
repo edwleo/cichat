@@ -19,7 +19,6 @@ class AveriaController extends BaseController{
 
     $this->response->setContentType('application/json');
     $data = $this->request->getJSON();
-    //return $this->response->setJSON($data);
 
     $newRecord = [
       'cliente'   => $data->cliente,

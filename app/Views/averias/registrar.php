@@ -41,7 +41,8 @@
 
             <div class="col-md-12 mb-2">
               <div class="form-floating">
-                <input type="datetime-local" class="form-control rounded-0" id="fechahora" placeholder="Fecha evento" required>
+                <input type="datetime-local" class="form-control rounded-0" id="fechahora" placeholder="Fecha evento"
+                  required>
                 <label for="fechahora" class="form-label">Fecha evento</label>
               </div>
             </div>
@@ -64,6 +65,8 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
 
+      let conn = null;
+
       const cliente = document.getElementById('cliente')
       const problema = document.getElementById('problema')
       const fechahora = document.getElementById('fechahora')
@@ -71,26 +74,63 @@
       const notificacion = document.getElementById('notificacion')
       const comentario = document.getElementById('comentario')
 
-      async function registrar(){
+      function connet() {
+        //1. Objeto conexión
+        conn = new WebSocket('ws://localhost:8080')
+
+        //2. Apertura de conexión
+        conn.onopen = function (e) {
+          console.log("Conexión establecida")
+        }
+
+        //3. Envío de mensaje
+        conn.onmessage = function (e) {
+          const data = JSON.parse(e.data)
+          console.log(data)
+        }
+
+        //4. Cierre de comunicación
+        conn.onclose = function (e) {
+          console.log("Conexión finalizada")
+          setTimeout(connect, 3000)
+        }
+
+        //5. Manejo de errores
+        conn.onerror = function (e) {
+          console.error("Problemas en la conexión")
+        }
+      }
+
+      function sendMessage(message) {
+        if (conn.readyState == WebSocket.OPEN) {
+          const data = {
+            message: message
+          }
+          conn.send(JSON.stringify(data))
+        }
+      } //sendMessage
+
+      async function registrar() {
         const data = {
           cliente: cliente.value,
           problema: problema.value,
           fechahora: fechahora.value
         }
 
-        const response = await fetch(`<?= base_url() ?>public/api/averias/registrar`, { 
+        const response = await fetch(`<?= base_url() ?>public/api/averias/registrar`, {
           method: 'post',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         })
 
         const result = await response.json()
         notificacion.classList.remove('d-none')
 
-        if (result.success){
+        if (result.success) {
+          sendMessage('nuevoregistro') // <<< COMUNICAMOS DEL ÉXITO POR SOCKET
           notificacion.classList.add('alert-success')
           comentario.textContent = 'Avería registrada correctamente'
-        }else{
+        } else {
           notificacion.classList.add('alert-danger')
           comentario.textContent = 'no se pudo completar el proceso'
         }
@@ -99,7 +139,7 @@
       formulario.addEventListener("submit", (event) => {
         event.preventDefault()
 
-        if (confirm("¿Está seguro de guardar?")){
+        if (confirm("¿Está seguro de guardar?")) {
           registrar()
         }
       })
@@ -108,6 +148,8 @@
         notificacion.classList.add('d-none')
         cliente.focus()
       })
+
+      connet()
 
     })
   </script>
